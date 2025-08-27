@@ -1,0 +1,112 @@
+﻿@{
+    ViewData["Title"] = "Shortest Path Finder";
+
+    var graph = GraphData.GetGraph();
+    var nodes = graph.Select(n => n.Name).ToList();
+}
+
+<div class="main-screen">
+    <div class="top-row"></div>
+    <div class="bottom-row"></div>
+
+    <div class="header-section">
+        <h1>Dijkstra's Algorithm Calculator</h1>
+        <p class="subheader">
+            Discovering Optimal Routes Through Nodes Using Dijkstra's Method
+        </p>
+    </div>
+
+    <div class="calculator-box">
+        <div class="left-col">
+            <div class="left-inner-box">
+                <h5>Select Path</h5>
+                <div class="form-group">
+                    <label for="fromNode">From Node</label>
+                    <select id="fromNode">
+                        <option value="">Select</option>
+                        @foreach (var node in nodes)
+                        {
+                            <option value="@node">@node</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="toNode">To Node</label>
+                    <select id="toNode">
+                        <option value="">Select</option>
+                        @foreach (var node in nodes)
+                        {
+                            <option value="@node">@node</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button id="clearBtn" class="btn secondary">Clear</button>
+                    <button id="calculateBtn" class="btn primary">
+                        Calculate <i class="fas fa-calculator"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-col">
+            <div class="image-wrapper" id="imageWrapper">
+                <img src="~/images/clipart.png" alt="Image" />
+            </div>
+            <div id="resultBox" class="result hidden">
+                <h6>Result</h6>
+                <div class="result-inner">
+                    <p id="resultPath"></p>
+                    <p id="resultDistance"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $("#calculateBtn").click(function (e) {
+            e.preventDefault();
+
+            var fromNode = $("#fromNode").val();
+            var toNode = $("#toNode").val();
+
+            if (!fromNode || !toNode) {
+                alert("Please select both From and To nodes.");
+                return;
+            }
+
+            $.ajax({
+                url:"/Path/Calculate",
+                type: 'POST',
+                data: { fromNode: fromNode, toNode: toNode },
+                success: function (data) {
+                    if (data.distance >= 0) {
+                        $("#resultPath").text(`From Node Name = "${fromNode}", To Node Name = "${toNode}": ${data.nodeNames.join(', ')}`);
+                        $("#resultDistance").text(`Total Distance: ${data.distance}`);
+                        $("#resultBox").removeClass("hidden");
+                        $("#imageWrapper").hide();
+                    } else {
+                        $("#resultPath").text("No path found.");
+                        $("#resultDistance").text("");
+                        $("#resultBox").removeClass("hidden");
+                        $("#imageWrapper").hide();
+                    }
+                }
+            });
+        });
+
+        $("#clearBtn").click(function () {
+            $("#fromNode").val("");
+            $("#toNode").val("");
+            $("#resultBox").addClass("hidden");
+            $("#imageWrapper").show();
+        });
+    </script>
+}
+
+
